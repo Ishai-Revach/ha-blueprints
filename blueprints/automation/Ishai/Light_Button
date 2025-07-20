@@ -1,0 +1,36 @@
+action:
+  - choose:
+      - conditions: "{{ action == 'single' }}"
+        sequence:
+          - service: light.toggle
+            target:
+              entity_id: "{{ light }}"
+
+      - conditions: "{{ action == 'double' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ light }}"
+            data:
+              brightness: >
+                {% set current = state_attr(light, 'brightness') | int(0) %}
+                {% set current_pct = (current / 255 * 100) | round(0) %}
+                {% set new_pct = current_pct + 10 %}
+                {% if new_pct > 100 %}
+                  {% set new_pct = 10 %}
+                {% endif %}
+                {{ (new_pct / 100 * 255) | round(0) }}
+
+      - conditions: "{{ action == 'hold' or action == 'long' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ light }}"
+            data:
+              brightness: >
+                {% set current = state_attr(light, 'brightness') | int(0) %}
+                {% if current > 100 %}
+                  26
+                {% else %}
+                  204
+                {% endif %}
